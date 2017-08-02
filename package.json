@@ -4,6 +4,8 @@
   "description": "Enables creation and consumption of Unix domain socket based IPC channels between Node.js apps using JSON-RPC 2.0 as a protocol.",
   "main": "gulpfile.babel.js",
   "scripts": {
+    "example-client": " gulp build && babel test/examples/client.js > test/examples/client-transpiled.js && DEBUG=json-ipc node test/examples/client-transpiled.js",
+    "example-server": " gulp build && babel test/examples/server.js > test/examples/server-transpiled.js && DEBUG=json-ipc node test/examples/server-transpiled.js",
     "prepublish": "gulp build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,11 +14,12 @@
     "url": "git+https://github.com/PlayNetwork/json-ipc-lib.git"
   },
   "keywords": [
-    "ipc",
-    "unix",
     "domain",
+    "inter-process communication",
+    "ipc",
+    "json-rpc",
     "socket",
-    "json-rpc"
+    "unix"
   ],
   "author": "Joshua Thomas (https://github.com/brozeph)",
   "license": "MIT",
@@ -27,6 +30,7 @@
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "debug": "^2.6.8",
+    "json-rpc-protocol": "^0.11.3",
     "source-map-support": "^0.4.15"
   },
   "devDependencies": {

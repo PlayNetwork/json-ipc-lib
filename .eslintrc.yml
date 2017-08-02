@@ -24,7 +24,6 @@
       - before: true
         after: true
     babel/new-cap: 2
-    babel/no-await-in-loop: 2
     babel/object-curly-spacing:
       - 2
       - "always"
@@ -56,6 +55,7 @@
         after: false
     guard-for-in: 2
     handle-callback-err: 2
+    no-await-in-loop: 2
     no-caller: 2
     no-case-declarations: 2
     no-cond-assign: 2
@@ -148,6 +148,9 @@
       - 2
       - "single"
     radix: 2
+    sort-keys: 2
+    sort-imports: 2
+    sort-vars: 2
     space-before-function-paren:
       - 2
       - "always"

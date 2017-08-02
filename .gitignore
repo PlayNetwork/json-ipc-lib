@@ -2,7 +2,5 @@
 /dist/
 /node_modules/
 /reports/
-/test/sandbox
-stacktrace*.log
 /npm-debug.log
 /.nyc_output/

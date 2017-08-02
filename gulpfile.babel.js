@@ -25,7 +25,7 @@ module.exports = (() => {
 
 	gulp.task('lint', () => {
 		return gulp
-			.src(['src/**/*.js', 'test/**/*.js', '!node_modules/**', '!reports/**'])
+			.src(['src/**/*.js', 'test/**/*.js', '!node_modules/**', '!reports/**', '!test/examples/*transpiled.js'])
 			.pipe(eslint())
 			.pipe(eslint.format())
 			.pipe(eslint.failAfterError());
