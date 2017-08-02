@@ -1,0 +1,46 @@
+{
+  "name": "json-ipc-lib",
+  "version": "1.0.0",
+  "description": "Enables creation and consumption of Unix domain socket based IPC channels between Node.js apps using JSON-RPC 2.0 as a protocol.",
+  "main": "gulpfile.babel.js",
+  "scripts": {
+    "prepublish": "gulp build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PlayNetwork/json-ipc-lib.git"
+  },
+  "keywords": [
+    "ipc",
+    "unix",
+    "domain",
+    "socket",
+    "json-rpc"
+  ],
+  "author": "Joshua Thomas (https://github.com/brozeph)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PlayNetwork/json-ipc-lib/issues"
+  },
+  "homepage": "https://github.com/PlayNetwork/json-ipc-lib#readme",
+  "dependencies": {
+    "babel-polyfill": "^6.23.0",
+    "debug": "^2.6.8",
+    "source-map-support": "^0.4.15"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "babel-plugin-istanbul": "^4.1.4",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "del": "^3.0.0",
+    "eslint-plugin-babel": "^4.1.2",
+    "eslint-plugin-flowtype": "^2.35.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-eslint": "^4.0.0",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-util": "^3.0.8"
+  }
+}
