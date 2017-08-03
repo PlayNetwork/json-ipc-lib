@@ -26,6 +26,10 @@ const
 
 export class Client extends EventEmitter {
 	constructor (path, options) {
+		if (!path) {
+			throw new Error('path parameter is required');
+		}
+
 		super();
 
 		debug('new JSON-IPC Client: %s', path);

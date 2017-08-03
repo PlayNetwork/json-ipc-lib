@@ -4,10 +4,11 @@
   "description": "Enables creation and consumption of Unix domain socket based IPC channels between Node.js apps using JSON-RPC 2.0 as a protocol.",
   "main": "gulpfile.babel.js",
   "scripts": {
-    "example-client": "DEBUG=json-ipc node examples/client-transpiled.js",
-    "example-server": "DEBUG=json-ipc node examples/server-transpiled.js",
+    "example:client": "DEBUG=json-ipc node examples/client-transpiled.js",
+    "example:server": "DEBUG=json-ipc node examples/server-transpiled.js",
     "prepublish": "gulp build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "gulp lint && mocha test",
+    "test:unit": "mocha test"
   },
   "repository": {
     "type": "git",
@@ -35,9 +36,10 @@
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
-    "babel-plugin-istanbul": "^4.1.4",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
+    "babel-register": "^6.24.1",
+    "chai": "^4.1.0",
     "del": "^3.0.0",
     "eslint-plugin-babel": "^4.1.2",
     "eslint-plugin-flowtype": "^2.35.0",
@@ -45,6 +47,6 @@
     "gulp-babel": "^6.1.2",
     "gulp-eslint": "^4.0.0",
     "gulp-sourcemaps": "^2.6.0",
-    "gulp-util": "^3.0.8"
+    "mocha": "^3.5.0"
   }
 }

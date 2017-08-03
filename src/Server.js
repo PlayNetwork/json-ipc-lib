@@ -65,6 +65,14 @@ const
 
 export class Server extends EventEmitter {
 	constructor (path, methods, options) {
+		if (!path) {
+			throw new Error('path parameter is required');
+		}
+
+		if (!methods || typeof methods !== 'object') {
+			throw new Error('methods parameter is required');
+		}
+
 		super();
 
 		debug('new JSON-IPC Server: %s', path);

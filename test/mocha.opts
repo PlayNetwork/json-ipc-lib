@@ -1,0 +1,5 @@
+--require babel-register
+--require babel-polyfill
+--require test/setup
+--reporter spec
+--recursive
