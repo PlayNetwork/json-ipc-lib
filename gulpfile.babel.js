@@ -5,8 +5,6 @@ import gulp from 'gulp';
 import sourcemaps from 'gulp-sourcemaps';
 
 module.exports = (() => {
-	'use strict';
-
 	gulp.task('build', ['clean-build'], () => {
 		return gulp
 			.src('src/**/*.js')
