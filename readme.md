@@ -12,7 +12,7 @@ npm install --save json-ipc-lib
 
 ### Create a server
 
-Below is an example where we create a file named `server.js` and populate it with the following code (available at [./test/examples/server.js]):
+Below is an example where we create a file named `server.js` and populate it with the following code (available at ![./test/examples/server.js](./test/examples/server.js)):
 
 ```javascript
 import * as ipc from 'json-ipc-lib';
@@ -43,7 +43,7 @@ $ DEBUG=json-ipc node server.js
 
 ### Create a client
 
-Next up, we create an example of consuming the server from the example above. We create a file named `client.js` and put the following code in it (available at [./test/examples/client.js]):
+Next up, we create an example of consuming the server from the example above. We create a file named `client.js` and put the following code in it (available at ![./test/examples/client.js](./test/examples/client.js)):
 
 ```javascript
 import 'babel-polyfill';
