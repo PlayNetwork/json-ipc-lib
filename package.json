@@ -4,8 +4,8 @@
   "description": "Enables creation and consumption of Unix domain socket based IPC channels between Node.js apps using JSON-RPC 2.0 as a protocol.",
   "main": "gulpfile.babel.js",
   "scripts": {
-    "example-client": " gulp build && babel test/examples/client.js > test/examples/client-transpiled.js && DEBUG=json-ipc node test/examples/client-transpiled.js",
-    "example-server": " gulp build && babel test/examples/server.js > test/examples/server-transpiled.js && DEBUG=json-ipc node test/examples/server-transpiled.js",
+    "example-client": "DEBUG=json-ipc node examples/client-transpiled.js",
+    "example-server": "DEBUG=json-ipc node examples/server-transpiled.js",
     "prepublish": "gulp build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
