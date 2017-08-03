@@ -1,7 +1,8 @@
 .DS_Store
+/.nyc_output/
 /coverage/
 /dist/
 /node_modules/
 /reports/
 /npm-debug.log
-/.nyc_output/
+
