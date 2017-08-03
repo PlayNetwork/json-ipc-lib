@@ -63,8 +63,6 @@ _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
               return;
             }
 
-            console.log(JSON.stringify(verbose, 0, 2));
-
             console.log('result from verbose client.call: %s', verbose);
           });
 

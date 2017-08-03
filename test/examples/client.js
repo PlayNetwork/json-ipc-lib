@@ -46,8 +46,6 @@ import * as ipc from '../../dist';
         return;
     }
 
-    console.log(JSON.stringify(verbose, 0, 2));
-
     console.log(
       'result from verbose client.call: %s',
       verbose);
