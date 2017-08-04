@@ -100,23 +100,29 @@ export class Server extends EventEmitter {
 
 	_handleConnection (socket) {
 		let
+			existingSocketIndex = this.connections.findIndex(
+				(element) => element === socket),
 			message,
 			methodTarget,
 			request,
 			result,
 			self = this;
 
-		// emit the connection event
-		self.emit(EVENT_CONNECTION, socket);
-		self.connections.push(socket);
+		// emit the connection event for new connections
+		if (existingSocketIndex < 0) {
+			self.emit(EVENT_CONNECTION, socket);
+			self.connections.push(socket);
 
-		// remove the connection once the socket is closed...
-		socket.on(EVENT_CLOSE, () => {
-			let index = self.connections.findIndex(socket);
-			if (index >= 0) {
-				self.connections.splice(index, 1);
-			}
-		});
+			// remove the connection once the socket has closed
+			socket.on(EVENT_CLOSE, () => {
+				let index = self.connections.findIndex(
+					(element) => element === socket);
+
+				if (index >= 0) {
+					self.connections.splice(index, 1);
+				}
+			});
+		}
 
 		while ((message = socket.read()) !== null) {
 			debug('message received on socket', message);

@@ -8,6 +8,7 @@ import net from 'net';
 
 const
 	DEFAULT_TIMEOUT = 5000, // 5 seconds
+	EVENT_CLOSE = 'close',
 	EVENT_DATA = 'data',
 	EVENT_ERROR = 'error',
 	EVENT_TIMEOUT = 'timeout';
@@ -74,12 +75,16 @@ export class Client extends EventEmitter {
 							'writing message to socket connection: %o',
 							request);
 
-						socket.write(JSON.stringify(request));
+						socket.end(JSON.stringify(request));
 					}
 				});
 
 				// set a timeout for a response from the socket
 				socket.setTimeout(self.options.timeout);
+
+				// log when the socket is closed for discerning users...
+				socket.on(EVENT_CLOSE,
+					() => debug('socket connection with server closed'));
 
 				// handle inbound response data
 				socket.on(EVENT_DATA, (data) => {
@@ -95,9 +100,6 @@ export class Client extends EventEmitter {
 
 						return;
 					}
-
-					// end the socket connection
-					socket.end();
 
 					if (response.error) {
 						let err = new Error([

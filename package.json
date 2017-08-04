@@ -8,6 +8,7 @@
     "example:server": "DEBUG=json-ipc node examples/server-transpiled.js",
     "prepublish": "gulp build",
     "test": "gulp lint && mocha test",
+    "test:coverage": "istanbul cover ./node_modules/.bin/_mocha",
     "test:unit": "mocha test"
   },
   "repository": {
@@ -47,6 +48,7 @@
     "gulp-babel": "^6.1.2",
     "gulp-eslint": "^4.0.0",
     "gulp-sourcemaps": "^2.6.0",
+    "istanbul": "^1.1.0-alpha.1",
     "mocha": "^3.5.0"
   }
 }

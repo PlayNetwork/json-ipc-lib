@@ -1,6 +1,6 @@
 /* eslint no-magic-numbers:0 */
 /* eslint no-unused-expressions:0 */
-import { Server } from '../../src';
+import { Client, Server } from '../../src';
 
 describe('Server', () => {
 	let
@@ -15,7 +15,7 @@ describe('Server', () => {
 			c : {
 				asyncLowerCase : (val) => new Promise(
 					(resolve) => setTimeout(
-						() => resolve(val.toLowerCase()), 1000))
+						() => resolve(val.toLowerCase()), 500))
 			}
 		};
 
@@ -88,6 +88,7 @@ describe('Server', () => {
 				server.connections.push({
 					end : done
 				});
+
 				server.close();
 			});
 		});
@@ -106,11 +107,31 @@ describe('Server', () => {
 			let server = new Server(mockPath, mockServices);
 			server.listen((err) => {
 				should.not.exist(err);
-				return server.close(done);
+				server.close(done);
 			});
 		});
 
-		// should emit listening event
+		it('should emit listening event', (done) => {
+			let server = new Server(mockPath, mockServices);
+			server.listen();
+			server.on('listening', () => server.close(done));
+		});
+
+		it('should emit connection event', (done) => {
+			let server = new Server(mockPath, mockServices);
+
+			server.listen(() => {
+				let client = new Client(mockPath);
+				client.call('b.lowerCasePromise', 'TESTING');
+			});
+
+			server.on('connection', (socket) => {
+				should.exist(socket);
+				should.exist(socket._readableState);
+				socket._readableState.defaultEncoding.should.equal('utf8');
+				server.close(done);
+			});
+		});
 
 		// should emit request event on new message
 
