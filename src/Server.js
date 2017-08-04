@@ -10,8 +10,10 @@ import net from 'net';
 const
 	DEFAULT_CLEAN_HANDLE_ON_LISTEN = true,
 	DEFAULT_ENCODING = 'utf8',
+	EVENT_CLOSE = 'close',
 	EVENT_CONNECTION = 'connection',
 	EVENT_ERROR = 'error',
+	EVENT_LISTENING = 'listening',
 	EVENT_READABLE = 'readable',
 	EVENT_REQUEST= 'request';
 
@@ -77,6 +79,8 @@ export class Server extends EventEmitter {
 
 		debug('new JSON-IPC Server: %s', path);
 
+		this._listening = false;
+		this.connections = [];
 		this.methods = methods;
 		this.options = initOptions(options);
 		this.path = path;
@@ -85,58 +89,34 @@ export class Server extends EventEmitter {
 			.on(EVENT_CONNECTION, (socket) => {
 				debug('new socket connection detected');
 				socket.setEncoding(DEFAULT_ENCODING);
-				socket.on(EVENT_READABLE, () => this._readMessage(socket));
+				socket.on(EVENT_READABLE, () => this._handleConnection(socket));
 			})
 			.on(EVENT_ERROR, (err) => debug(
 				'error occurred in JSON-IPC Server: %s (%o)',
 				err.message,
-				err));
+				err))
+			.on(EVENT_LISTENING, () => (this._listening = true));
 	}
 
-	async listen (callback) {
-		callback = callback || function (err, server) {
-			if (err && err instanceof Error) {
-				self.emit(EVENT_ERROR, err);
-
-				return Promise.reject(err);
-			}
-
-			return Promise.resolve(server);
-		};
-
-		let self = this;
-
-		// remove server handle on listen if specified
-		if (self.options.cleanHandleOnListen) {
-			await cleanHandle(self.path);
-		}
-
-		return await new Promise((resolve, reject) => self.server.listen(self.path, (err) => {
-				if (err) {
-					err.message = [
-						'JSON-IPC Server Exception:',
-						err.message || 'unable to start server'].join(':');
-					err.path = self.path;
-
-					self.emit(EVENT_ERROR, err);
-					return reject(err);
-				}
-
-				debug('listening on Unix domain socket: %s', self.path);
-
-				return resolve();
-			}))
-			.catch((err) => callback(err))
-			.then(() => callback(null, self));
-	}
-
-	_readMessage (socket) {
+	_handleConnection (socket) {
 		let
 			message,
 			methodTarget,
 			request,
 			result,
 			self = this;
+
+		// emit the connection event
+		self.emit(EVENT_CONNECTION, socket);
+		self.connections.push(socket);
+
+		// remove the connection once the socket is closed...
+		socket.on(EVENT_CLOSE, () => {
+			let index = self.connections.findIndex(socket);
+			if (index >= 0) {
+				self.connections.splice(index, 1);
+			}
+		});
 
 		while ((message = socket.read()) !== null) {
 			debug('message received on socket', message);
@@ -215,6 +195,94 @@ export class Server extends EventEmitter {
 				socket,
 				protocol.format.response(request.id, result));
 		}
+	}
+
+	async close (callback) {
+		let self = this;
+
+		callback = callback || function (err) {
+			if (err && err instanceof Error) {
+				self.emit(EVENT_ERROR, err);
+
+				return Promise.reject(err);
+			}
+
+			return Promise.resolve(self);
+		};
+
+		// error out if not listening...
+		if (!self._listening) {
+			return Promise
+				.resolve()
+				.then(() => callback(new Error('server is not listening')));
+		}
+
+		// iterate through each connection and close it...
+		self.connections.forEach((socket) => socket.end());
+
+		// stop listening...
+		self._listening = false;
+		self.emit(EVENT_CLOSE)
+
+		return Promise
+			.resolve()
+			.then(() => callback());
+	}
+
+	async getConnections (callback) {
+		let self = this;
+
+		callback = callback || function (err, count) {
+			if (err) {
+				return Promise.reject(err);
+			}
+
+			return Promise.resolve(count);
+		};
+
+		return Promise
+			.resolve()
+			.then(() => callback(null, self.connections.length));
+	}
+
+	async listen (callback) {
+		let self = this;
+
+		callback = callback || function (err, server) {
+			if (err && err instanceof Error) {
+				self.emit(EVENT_ERROR, err);
+
+				return Promise.reject(err);
+			}
+
+			return Promise.resolve(server);
+		};
+
+		// remove server handle on listen if specified
+		if (self.options.cleanHandleOnListen) {
+			await cleanHandle(self.path);
+		}
+
+		return await new Promise(
+			(resolve, reject) => self.server.listen(self.path, (err) => {
+				if (err) {
+					err.message = [
+						'JSON-IPC Server Exception:',
+						err.message || 'unable to start server'].join(':');
+					err.path = self.path;
+
+					self.emit(EVENT_ERROR, err);
+					return reject(err);
+				}
+
+				self.emit(EVENT_LISTENING);
+
+				debug('listening on Unix domain socket: %s', self.path);
+
+				return resolve();
+			}))
+			.catch((err) => callback(err))
+			.then(() => callback(null, self));
 	}
 }
 
