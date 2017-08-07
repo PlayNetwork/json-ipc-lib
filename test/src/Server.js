@@ -107,14 +107,16 @@ describe('Server', () => {
 			let server = new Server(mockPath, mockServices);
 			server.listen((err) => {
 				should.not.exist(err);
-				server.close(done);
+				return server.close(done);
 			});
 		});
 
 		it('should emit listening event', (done) => {
 			let server = new Server(mockPath, mockServices);
 			server.listen();
-			server.on('listening', () => server.close(done));
+			server.on('listening', () => {
+				return server.close(done);
+			});
 		});
 
 		it('should emit connection event', (done) => {
@@ -129,7 +131,7 @@ describe('Server', () => {
 				should.exist(socket);
 				should.exist(socket._readableState);
 				socket._readableState.defaultEncoding.should.equal('utf8');
-				server.close(done);
+				return server.close(done);
 			});
 		});
 

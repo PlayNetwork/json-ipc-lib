@@ -18,7 +18,7 @@ const
 	EVENT_REQUEST= 'request';
 
 const
-	cleanHandle = (path) => fs.unlink((path), () => Promise.resolve()),
+	cleanHandle = (path) => new Promise((resolve) => fs.unlink(path, () => resolve())),
 	debug = log('json-ipc'),
 	getMethodTarget = (methods, excludedMethods, requestedMethod) => {
 		let methodTarget;
@@ -228,10 +228,11 @@ export class Server extends EventEmitter {
 
 		// stop listening...
 		self._listening = false;
-		self.emit(EVENT_CLOSE)
+		self.emit(EVENT_CLOSE);
 
-		return Promise
-			.resolve()
+		// remove the pipe file
+		return await cleanHandle(self.path)
+			.catch((err) => callback(err))
 			.then(() => callback());
 	}
 
