@@ -135,7 +135,24 @@ describe('Server', () => {
 			});
 		});
 
-		// should emit request event on new message
+		it('should emit connection event', (done) => {
+			let server = new Server(mockPath, mockServices);
+
+			server.listen(() => {
+				let client = new Client(mockPath);
+				client.call('b.lowerCasePromise', 'TESTING');
+			});
+
+			server.on('request', (request) => {
+				should.exist(request);
+				request.jsonrpc.should.equal('2.0');
+				request.method.should.equal('b.lowerCasePromise');
+				request.params[0].should.equal('TESTING');
+				should.exist(request.id);
+
+				return server.close(done);
+			});
+		});
 
 		// should track active connections
 	});
