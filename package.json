@@ -9,6 +9,7 @@
     "prepublish": "gulp build",
     "test": "gulp lint && istanbul cover ./node_modules/.bin/_mocha",
     "test:coverage": "istanbul cover ./node_modules/.bin/_mocha",
+    "test:coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "test:unit": "mocha test"
   },
   "repository": {
