@@ -1,6 +1,7 @@
 /* eslint no-magic-numbers:0 */
 /* eslint no-unused-expressions:0 */
 import { Client, Server } from '../../src';
+import fs from 'fs';
 
 describe('Server', () => {
 	let
@@ -63,7 +64,7 @@ describe('Server', () => {
 				});
 		});
 
-		it('should support callbacl', (done) => {
+		it('should support callback', (done) => {
 			let server = new Server(mockPath, mockServices);
 
 			server.close((err) => {
@@ -111,6 +112,54 @@ describe('Server', () => {
 			});
 		});
 
+		it('should pass through error on listen', async () => {
+			let server = new Server(
+				'/no/path/exists/to/this/location',
+				mockServices);
+
+			// attempt to listen... catch the error
+			return await server
+				.listen()
+				.then(() => Promise.reject('expected an Error'))
+				.catch((err) => {
+					should.exist(err);
+					err.message.should.contain('EACCES');
+
+					return Promise.resolve();
+				});
+		});
+
+		it('should not remove existing socket file if specified', async () => {
+			let server = new Server(
+				mockPath,
+				mockServices,
+				{ cleanHandleOnListen : false });
+
+			// create a file...
+			await new Promise(
+				(resolve, reject) => fs.appendFile(
+					mockPath,
+					'test',
+					(err) => {
+						if (err) {
+							return reject(err);
+						}
+
+						return resolve();
+					}));
+
+			// attempt to listen... catch the error
+			return await server
+				.listen()
+				.then(() => Promise.reject('expected an Error'))
+				.catch((err) => {
+					should.exist(err);
+					err.message.should.contain('EADDRINUSE');
+
+					return Promise.resolve();
+				});
+		});
+
 		it('should emit listening event', (done) => {
 			let server = new Server(mockPath, mockServices);
 			server.listen();
@@ -135,7 +184,7 @@ describe('Server', () => {
 			});
 		});
 
-		it('should emit connection event', (done) => {
+		it('should emit request event', (done) => {
 			let server = new Server(mockPath, mockServices);
 
 			server.listen(() => {
@@ -154,6 +203,39 @@ describe('Server', () => {
 			});
 		});
 
-		// should track active connections
+		it('should track connections', (done) => {
+			let server = new Server(mockPath, mockServices);
+
+			server.listen(() => {
+				let client = new Client(mockPath);
+				client.call('b.lowerCasePromise', 'TESTING');
+			});
+
+			// after socket is closed, ensure 0 connections (Promise)
+			server.on('connection', (socket) => {
+				return socket.on('end', () => {
+					return new Promise(
+						(resolve) => {
+							setTimeout(resolve, 500);
+						})
+						.then(() => server.getConnections())
+						.then((count) => {
+							should.exist(count);
+							count.should.equal(0);
+
+							done();
+						});
+				});
+			});
+
+			// once request is received, ensure 1 connection (callback)
+			server.on('request', () => {
+				return server.getConnections((err, count) => {
+					should.not.exist(err);
+					should.exist(count);
+					count.should.equal(1);
+				});
+			});
+		});
 	});
 });

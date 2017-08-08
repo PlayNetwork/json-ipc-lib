@@ -7,7 +7,7 @@
     "example:client": "DEBUG=json-ipc node examples/client-transpiled.js",
     "example:server": "DEBUG=json-ipc node examples/server-transpiled.js",
     "prepublish": "gulp build",
-    "test": "gulp lint && mocha test",
+    "test": "gulp lint && istanbul cover ./node_modules/.bin/_mocha",
     "test:coverage": "istanbul cover ./node_modules/.bin/_mocha",
     "test:unit": "mocha test"
   },

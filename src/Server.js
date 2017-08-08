@@ -91,10 +91,14 @@ export class Server extends EventEmitter {
 				socket.setEncoding(DEFAULT_ENCODING);
 				socket.on(EVENT_READABLE, () => this._handleConnection(socket));
 			})
-			.on(EVENT_ERROR, (err) => debug(
-				'error occurred in JSON-IPC Server: %s (%o)',
-				err.message,
-				err))
+			.on(EVENT_ERROR, (err) => {
+				debug(
+					'error occurred in JSON-IPC Server: %s (%o)',
+					err.message,
+					err);
+
+				this.emit(EVENT_ERROR, err);
+			})
 			.on(EVENT_LISTENING, () => (this._listening = true));
 	}
 
@@ -271,23 +275,17 @@ export class Server extends EventEmitter {
 		}
 
 		return await new Promise(
-			(resolve, reject) => self.server.listen(self.path, (err) => {
-				if (err) {
-					err.message = [
-						'JSON-IPC Server Exception:',
-						err.message || 'unable to start server'].join(':');
-					err.path = self.path;
+			(resolve, reject) => {
+				self.on(EVENT_ERROR, reject);
 
-					self.emit(EVENT_ERROR, err);
-					return reject(err);
-				}
+				self.server.listen(self.path, () => {
+					self.emit(EVENT_LISTENING);
 
-				self.emit(EVENT_LISTENING);
+					debug('listening on Unix domain socket: %s', self.path);
 
-				debug('listening on Unix domain socket: %s', self.path);
-
-				return resolve();
-			}))
+					return resolve();
+				});
+			})
 			.catch((err) => callback(err))
 			.then(() => callback(null, self));
 	}
