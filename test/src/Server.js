@@ -96,11 +96,37 @@ describe('Server', () => {
 	});
 
 	describe('#getConnections', () => {
-		// should support callback
+		it('should support callback', (done) => {
+			let server = new Server(mockPath, mockServices);
 
-		// should return 0 with no connections
+			server.listen(() => {
+				let client = new Client(mockPath);
+				client.call('b.lowerCasePromise', 'TESTING');
+			});
 
-		// should return count of active connections
+			server.on('connection', () => {
+				return server.getConnections((err, count) => {
+					should.not.exist(err);
+					should.exist(count);
+					count.should.equal(1);
+
+					return server.close(done);
+				});
+			});
+		});
+
+		it('should return 0 with no connections', async () => {
+			// setup the server
+			let server = new Server(mockPath, mockServices);
+			await server.listen();
+
+			let count = await server.getConnections();
+			should.exist(count);
+			count.should.equal(0);
+
+			// close the server
+			await server.close();
+		});
 	});
 
 	describe('#listen', () => {
