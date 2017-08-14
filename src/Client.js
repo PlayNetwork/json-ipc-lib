@@ -40,6 +40,10 @@ export class Client extends EventEmitter {
 	}
 
 	async call (method, ...args) {
+		if (!method || typeof method !== 'string') {
+			throw new Error('method parameter is required');
+		}
+
 		let
 			callback = (args && args.length && typeof args[args.length - 1] === 'function') ?
 				args.splice(args.length - 1)[0] :
