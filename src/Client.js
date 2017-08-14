@@ -2,7 +2,6 @@ import 'babel-polyfill';
 import 'source-map-support/register';
 
 import * as protocol from 'json-rpc-protocol';
-import EventEmitter from 'events';
 import log from 'debug';
 import net from 'net';
 
@@ -25,13 +24,11 @@ const
 		return options;
 	};
 
-export class Client extends EventEmitter {
+export class Client {
 	constructor (path, options) {
 		if (!path) {
 			throw new Error('path parameter is required');
 		}
-
-		super();
 
 		debug('new JSON-IPC Client: %s', path);
 
@@ -48,13 +45,11 @@ export class Client extends EventEmitter {
 			callback = (args && args.length && typeof args[args.length - 1] === 'function') ?
 				args.splice(args.length - 1)[0] :
 				function (err, result) {
-					if (err) {
+					if (err && err instanceof Error) {
 						debug(
 							'error occurred in JSON-IPC Client: %s (%o)',
 							err.message,
 							err);
-
-						self.emit(EVENT_ERROR, err);
 
 						return Promise.reject(err);
 					}
@@ -144,8 +139,8 @@ export class Client extends EventEmitter {
 					return reject(err);
 				});
 			})
-			.catch((err) => callback(err))
-			.then((response) => callback(null, response));
+			.then((response) => callback(null, response))
+			.catch((err) => callback(err));
 	}
 }
 

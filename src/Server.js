@@ -236,8 +236,8 @@ export class Server extends EventEmitter {
 
 		// remove the pipe file
 		return await cleanHandle(self.path)
-			.catch((err) => callback(err))
-			.then(() => callback());
+			.then(() => callback())
+			.catch((err) => callback(err));
 	}
 
 	async getConnections (callback) {
@@ -286,8 +286,8 @@ export class Server extends EventEmitter {
 					return resolve();
 				});
 			})
-			.catch((err) => callback(err))
-			.then(() => callback(null, self));
+			.then(() => callback(null, self))
+			.catch((err) => callback(err));
 	}
 }
 

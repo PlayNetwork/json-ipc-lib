@@ -155,6 +155,20 @@ describe('Server', () => {
 				});
 		});
 
+		it('should pass through error on listen (callback)', (done) => {
+			let server = new Server(
+				'/no/path/exists/to/this/location',
+				mockServices);
+
+			// attempt to listen... catch the error
+			server.listen((err) => {
+				should.exist(err);
+				err.message.should.contain('EACCES');
+
+				return done();
+			});
+		});
+
 		it('should not remove existing socket file if specified', async () => {
 			let server = new Server(
 				mockPath,

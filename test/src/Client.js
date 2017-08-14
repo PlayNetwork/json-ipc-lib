@@ -85,5 +85,18 @@ describe('Client', () => {
 				});
 			});
 		});
+
+		it('should expose error event for connection errors', (done) => {
+			let client = new Client(mockPath);
+
+			// not calling server.listen so that there is no open socket
+
+			client.call('a.throwError', 'test error event', (err) => {
+				should.exist(err);
+				err.message.should.contain('ENOENT /tmp/test.sock');
+
+				return done();
+			});
+		});
 	});
 });
