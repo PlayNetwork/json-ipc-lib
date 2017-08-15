@@ -3,11 +3,8 @@ import del from 'del';
 import eslint from 'gulp-eslint';
 import gulp from 'gulp';
 import sourcemaps from 'gulp-sourcemaps';
-import util from 'gulp-util';
 
 module.exports = (() => {
-	'use strict';
-
 	gulp.task('build', ['clean-build'], () => {
 		return gulp
 			.src('src/**/*.js')
@@ -20,8 +17,6 @@ module.exports = (() => {
 	});
 
 	gulp.task('clean-build', () => del('dist'));
-
-	gulp.task('clean-reports', () => del('reports'));
 
 	gulp.task('lint', () => {
 		return gulp

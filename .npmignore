@@ -1,4 +1,7 @@
 .git/
+.nyc_output/
+coverage/
+examples/
 src/
 test/
 .babelrc

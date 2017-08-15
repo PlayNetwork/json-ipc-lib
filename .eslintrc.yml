@@ -148,6 +148,7 @@
       - 2
       - "single"
     radix: 2
+    semi: 2
     sort-keys: 2
     sort-imports: 2
     sort-vars: 2

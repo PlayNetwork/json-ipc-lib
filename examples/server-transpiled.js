@@ -4,7 +4,7 @@ require('babel-polyfill');
 
 require('source-map-support/register');
 
-var _dist = require('../../dist');
+var _dist = require('../dist');
 
 var ipc = _interopRequireWildcard(_dist);
 
@@ -16,10 +16,19 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
  * the server. This object can have multiple children
  * and unlimited hiearchy.
  **/
-var services = {
+var DELAY = 1000,
+    services = {
   hello: function hello() {
     var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'olleh';
     return value;
+  },
+  helloDelayed: function helloDelayed() {
+    var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'olleh';
+    return new Promise(function (resolve) {
+      return setTimeout(function () {
+        return resolve(value);
+      }, DELAY);
+    });
   }
 };
 

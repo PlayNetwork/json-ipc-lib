@@ -4,7 +4,7 @@ require('babel-polyfill');
 
 require('source-map-support/register');
 
-var _dist = require('../../dist');
+var _dist = require('../dist');
 
 var ipc = _interopRequireWildcard(_dist);
 
@@ -76,7 +76,17 @@ _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
             return console.error('error when passing no arguments to client.call: %s', ex.message, ex);
           });
 
-        case 13:
+          /**
+           * call an asynchronous method and wait
+           * using a Promise
+           **/
+          client.call('services.helloDelayed', 'testing').then(function (response) {
+            return console.log('result when calling asynchronous server method via client.call: %s', response);
+          }).catch(function (ex) {
+            return console.error('error when calling asynchronous server method via client.call: %s', ex.message, ex);
+          });
+
+        case 14:
         case 'end':
           return _context.stop();
       }

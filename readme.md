@@ -1,5 +1,7 @@
 # JSON IPC
 
+[![Build Status](https://travis-ci.org/PlayNetwork/json-ipc-lib.svg?branch=master)](https://travis-ci.org/PlayNetwork/json-ipc-lib) [![Coverage Status](https://coveralls.io/repos/github/PlayNetwork/json-ipc-lib/badge.svg)](https://coveralls.io/github/PlayNetwork/json-ipc-lib)
+
 This library exists to facilitate creation and consumption of Unix domain socket based interprocess communication channels that opinionatingly use JSON-RPC 2.0 as a communication protocol. This library takes care of the plumbing and error handling and provides a simple interface to speed up development.
 
 ## Getting Started
