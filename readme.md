@@ -133,22 +133,28 @@ result when passing no arguments to client.call: olleh
 
 ### Client
 
-Constructor: `new ipc.Client(path, options)`
+Constructor: `new ipc.Client(path, [options])`
 
-* `path` - `String`, value is `required` (i.e. `/var/run/my-service.sock`): String path on the file system to the location of the Unix domain socket file (or named pipe).
+Creates a new instance of a `Client` that can be used to communicate with a `Server` instance that is listening on another process.
+
+* `path` - `String`, value is `required` (i.e. `/var/run/my-service.sock`): String path on the file system to the location of the Unix domain socket file (or named pipe) that is being used by an active `Server` instance.
 * `options` - `Object`, value is `optional`:
   * `timeout` - `Number`, defaults to `5000`: The amount of time, in milliseconds, before the `call` method will timeout (a timeout results in an error response).
 
 #### #call
 
-Usage: `client.call(method, ...args)`
+Usage: `client.call(method, [...args])`
+
+Call a method that is exposed for remote procedure call by the `Server` instance to which the `Client` is connected (via the `path` parameter provided to the constructor).
 
 * `method` - `String` or `Object`, value is `required` (i.e. `services.hello`): String name of remove service method to execute *or optionally* a `JSON-RPC 2.0` compliant message that defines the `id`, `method` and `params` for the remote procedure call to be executed.
-* `args` - `Array`, value is `optional`: a list of arguments to provide to the remote method being executed. If the last value in the `Array` provided is a `function`, it is executed as a callback using the signature `function (err, result)`.
+* `args` - `Array`, value is `optional`: a list of arguments to provide to the remote method being executed. If the last value in the `Array` provided is a `function`, it is executed as a callback using the signature `function (err, result) { }`.
 
 ### Server
 
-Constructor: `new ipc.Server(path, methods, options)`
+Constructor: `new ipc.Server(path, methods, [options])`
+
+Creates a new instance of a `Server` that exposes various methods available for remote procedure call from other processes. The `Server` will create a Unix domain socket handle at the specified path and will automatically clean the handle on server exit.
 
 * `path` - `String`, value is `required` (i.e. `/var/run/my-service.sock`): String path on the file system to the location of the Unix domain socket file (or named pipe).
 * `methods` - `Object`, value is `required` (i.e. `{ services : { lowerCaseEcho : (val) => val.toLowerCase() } }`): An object, that may optionally have additional sub-objects, that maintains a list of remote methods available for execution. In the example, this field is an `Object` named `services` with a single `function` named `lowerCaseEcho` - this example translates to a JSON-RPC 2.0 method value of `services.lowerCaseEcho`
@@ -157,6 +163,12 @@ Constructor: `new ipc.Server(path, methods, options)`
   * `excludedMethods` - (`Array`, defaults to `[]`): My contain a list of strings that filter which methods are available for remote execution - this may come in handy when exposing an entire module, but there is a desire to hide certain functions from remote consumers.
 
 #### #close
+
+Usage: `server.close([callback])`
+
+Can be used to close an actively listening `Server` instance. If the `Server` instance is not listening for connections, this method will return an `Error`
+
+* `callback` - `function`, value is `optional` (i.e. `function (err) { }`: When provided, the method will execute the call back upon server close. When omitted, the method will return a `Promise` object.
 
 
 #### #getConnections
