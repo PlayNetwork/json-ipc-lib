@@ -2,7 +2,7 @@
 import 'babel-polyfill';
 import 'source-map-support/register';
 
-import * as ipc from '../../dist';
+import * as ipc from '../dist';
 
 (async () => {
   // create a client for server.js
@@ -64,4 +64,18 @@ import * as ipc from '../../dist';
       'error when passing no arguments to client.call: %s',
       ex.message,
       ex));
+
+  /**
+   * call an asynchronous method and wait
+   * using a Promise
+   **/
+  client
+  .call('services.helloDelayed', 'testing')
+  .then((response) => console.log(
+    'result when calling asynchronous server method via client.call: %s',
+    response))
+  .catch((ex) => console.error(
+    'error when calling asynchronous server method via client.call: %s',
+    ex.message,
+    ex));
 })();

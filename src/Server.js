@@ -24,17 +24,17 @@ const
 		let methodTarget;
 
 		if (!methods) {
-			debug('no available remote methods available for execution');
+			debug('Server: no available remote methods available for execution');
 			return;
 		}
 
 		if (!requestedMethod) {
-			debug('no remote execution method specified in message');
+			debug('Server: no remote execution method specified in message');
 			return;
 		}
 
 		if (excludedMethods.indexOf(requestedMethod) >= 0) {
-			debug('method specified in message is excluded from remote execution');
+			debug('Server: method specified in message is excluded from remote execution');
 			return;
 		}
 
@@ -60,7 +60,7 @@ const
 	},
 	jsonRpcResponse = (socket, message) => {
 		if (socket.writable) {
-			debug('writing response to socket: %s', message);
+			debug('Server: writing response to socket: %s', message);
 			socket.write(JSON.stringify(message));
 		}
 	};
@@ -77,7 +77,7 @@ export class Server extends EventEmitter {
 
 		super();
 
-		debug('new JSON-IPC Server: %s', path);
+		debug('Server: new JSON-IPC Server: %s', path);
 
 		this._listening = false;
 		this.connections = [];
@@ -87,13 +87,13 @@ export class Server extends EventEmitter {
 		this.server = net
 			.createServer()
 			.on(EVENT_CONNECTION, (socket) => {
-				debug('new socket connection detected');
+				debug('Server: new socket connection detected');
 				socket.setEncoding(DEFAULT_ENCODING);
 				socket.on(EVENT_READABLE, () => this._handleConnection(socket));
 			})
 			.on(EVENT_ERROR, (err) => {
 				debug(
-					'error occurred in JSON-IPC Server: %s (%o)',
+					'Server: error occurred: %s (%o)',
 					err.message,
 					err);
 
@@ -102,23 +102,30 @@ export class Server extends EventEmitter {
 			.on(EVENT_LISTENING, () => (this._listening = true));
 	}
 
-	_handleConnection (socket) {
+	async _handleConnection (socket) {
 		let
 			existingSocketIndex = this.connections.findIndex(
 				(element) => element === socket),
 			message,
 			methodTarget,
-			request,
 			result,
-			self = this;
+			self = this,
+			startTime;
 
 		// emit the connection event for new connections
 		if (existingSocketIndex < 0) {
+			debug('Server: connection handler activated with new socket');
+
 			self.emit(EVENT_CONNECTION, socket);
 			self.connections.push(socket);
 
 			// remove the connection once the socket has closed
-			socket.on(EVENT_CLOSE, () => {
+			socket.on(EVENT_CLOSE, (withError) => {
+				debug(
+					'Server: detected socket close (method: %s, withError: %s)',
+					socket.request ? socket.request.method : 'undefined',
+					withError);
+
 				let index = self.connections.findIndex(
 					(element) => element === socket);
 
@@ -128,29 +135,30 @@ export class Server extends EventEmitter {
 			});
 		}
 
+		/* eslint no-await-in-loop: 0 */
 		while ((message = socket.read()) !== null) {
-			debug('message received on socket', message);
+			debug('Server: message received on socket (%s)', message);
 
 			// attempt to parse the inbound JSON-RPC 2.0 message
 			try {
-				request = protocol.parse(JSON.parse(message));
+				socket.request = protocol.parse(JSON.parse(message));
 			} catch (ex) {
 				self.emit(EVENT_ERROR, ex);
 				return jsonRpcResponse(socket, ex);
 			}
 
 			debug(
-				'successfully parsed JSON-RPC 2.0 message, method target: %s',
-				request.method);
+				'Server: successfully parsed JSON-RPC 2.0 message, method target: %s',
+				socket.request.method);
 
 			// emit the request event
-			self.emit(EVENT_REQUEST, request);
+			self.emit(EVENT_REQUEST, socket.request);
 
 			// determine the actual method to invoke
 			methodTarget = getMethodTarget(
 				self.methods,
 				self.options.excludedMethods,
-				request.method);
+				socket.request.method);
 
 			// ensure we have a valid method to execute
 			if (!methodTarget) {
@@ -158,57 +166,90 @@ export class Server extends EventEmitter {
 				return jsonRpcResponse(
 					socket,
 					protocol.format.error(
-						request.id,
-						new protocol.MethodNotFound(request.method)));
+						socket.request.id,
+						new protocol.MethodNotFound(socket.request.method)));
 			}
 
 			// validate params (if provided) ... only supports Array at this point
-			if (request.params && !Array.isArray(request.params)) {
+			if (socket.request.params && !Array.isArray(socket.request.params)) {
 				return jsonRpcResponse(
 					socket,
 					protocol.format.error(
-						request.id,
+						socket.applyrequest.id,
 						new protocol.InvalidParameters('parameters must be an array')));
 			}
 
 			// attempt to execute the method
 			try {
-				result = methodTarget.apply(null, request.params);
+				debug(
+					'Server: executing method %s with parameters: %o',
+					socket.request.method,
+					socket.request.params);
+
+				startTime = Date.now();
+				result = methodTarget.apply(null, socket.request.params);
 			} catch (ex) {
+				debug(
+					'Server: error executing method %s: %s (%o)',
+					socket.request.method,
+					ex.message,
+					ex);
+
 				self.emit(EVENT_ERROR, ex);
 				return jsonRpcResponse(
 					socket,
 					protocol.format.error(
-						request.id,
+						socket.request.id,
 						new protocol.JsonRpcError(ex.message)));
 			}
 
-			// handle the result of the method when it returns a Promise
-			if (result && result.then && typeof result.then === 'function') {
-				/* eslint no-loop-func: 0*/
-				return result
-					.then((result) => jsonRpcResponse(
-						socket,
-						protocol.format.response(request.id, result)))
-					.catch((err) => {
-						self.emit(EVENT_ERROR, err);
-						return jsonRpcResponse(
-							socket,
-							protocol.format.error(
-								request.id,
-								new protocol.JsonRpcError(err.message)));
-					});
+			// handle synchronous results
+			if (result && (!result.then || typeof result.then !== 'function')) {
+				debug('Server: method %s returned synchronously', socket.request.method);
+
+				// handle the result of the method when not a Promise...
+				return jsonRpcResponse(
+					socket,
+					protocol.format.response(socket.request.id, result));
 			}
 
-			// handle the result of the method when not a Promise...
-			return jsonRpcResponse(
-				socket,
-				protocol.format.response(request.id, result));
+			debug('Server: method %s returned a Promise', socket.request.method);
+
+			// wait for the result
+			/* eslint no-loop-func: 0 */
+			return result
+				.then((value) => {
+					debug(
+						'Server: completed method %s in %dms',
+						socket.request.method,
+						Date.now() - startTime);
+
+					return jsonRpcResponse(
+						socket,
+						protocol.format.response(socket.request.id, value));
+				})
+				.catch((ex) => {
+					debug(
+						'Server: error returned when executing method %s after %dms: %s (%o)',
+						socket.request.method,
+						Date.now() - startTime,
+						ex.message,
+						ex);
+
+					self.emit(EVENT_ERROR, ex);
+					return jsonRpcResponse(
+						socket,
+						protocol.format.error(
+							socket.request.id,
+							new protocol.JsonRpcError(ex.message)));
+				});
 		}
 	}
 
 	async close (callback) {
 		let self = this;
+
+		debug('Server: close method called');
 
 		callback = callback || function (err) {
 			if (err && err instanceof Error) {
@@ -222,10 +263,14 @@ export class Server extends EventEmitter {
 
 		// error out if not listening...
 		if (!self._listening) {
+			debug('Server: close method called, but server is not presently listening');
+
 			return Promise
 				.resolve()
 				.then(() => callback(new Error('server is not listening')));
 		}
+
+		debug('Server: ending %d active connections', self.connections.length);
 
 		// iterate through each connection and close it...
 		self.connections.forEach((socket) => socket.end());
@@ -243,6 +288,8 @@ export class Server extends EventEmitter {
 	async getConnections (callback) {
 		let self = this;
 
+		debug('Server: getConnections method called');
+
 		callback = callback || function (err, count) {
 			if (err) {
 				return Promise.reject(err);
@@ -258,6 +305,8 @@ export class Server extends EventEmitter {
 
 	async listen (callback) {
 		let self = this;
+
+		debug('Server: listen method called');
 
 		callback = callback || function (err, server) {
 			if (err && err instanceof Error) {
@@ -281,7 +330,7 @@ export class Server extends EventEmitter {
 				self.server.listen(self.path, () => {
 					self.emit(EVENT_LISTENING);
 
-					debug('listening on Unix domain socket: %s', self.path);
+					debug('Server: listening on Unix domain socket: %s', self.path);
 
 					return resolve();
 				});

@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import 'source-map-support/register';
 
-import * as ipc from '../../dist';
+import * as ipc from '../dist';
 
 /**
  * The name of this object will act as a namespace for
@@ -9,9 +9,13 @@ import * as ipc from '../../dist';
  * the server. This object can have multiple children
  * and unlimited hiearchy.
  **/
-const services = {
-  hello : (value = 'olleh') => value
-};
+const
+  DELAY = 1000,
+  services = {
+    hello : (value = 'olleh') => value,
+    helloDelayed : (value = 'olleh') =>
+      new Promise((resolve) => setTimeout(() => resolve(value), DELAY))
+  };
 
 const server = new ipc.Server(
   '/tmp/example-ipc-server.sock',

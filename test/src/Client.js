@@ -13,9 +13,9 @@ describe('Client', () => {
 				lowerCasePromise : (val) => Promise.resolve(val.toLowerCase())
 			},
 			c : {
-				asyncLowerCase : (val) => new Promise(
-					(resolve) => setTimeout(
-						() => resolve(val.toLowerCase()), 500))
+				waitToReturn : (duration, val) => new Promise((resolve) => setTimeout(
+					() => resolve(val),
+					duration))
 			}
 		};
 
@@ -97,6 +97,41 @@ describe('Client', () => {
 
 				return done();
 			});
+		});
+
+		it('should support asynchronous server methods', async () => {
+			let
+				client = new Client(mockPath),
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			let result = await client.call('c.waitToReturn', 100, 'testing response');
+
+			should.exist(result);
+			result.should.equal('testing response');
+
+			await server.close();
+		});
+
+		it('should support timeout', async () => {
+			let
+				client = new Client(mockPath, { timeout : 500 }),
+				err,
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			try {
+				await client.call('c.waitToReturn', 1000, 'testing response');
+			} catch (ex) {
+				err = ex;
+			}
+
+			should.exist(err);
+			err.message.should.contain('timeout occurred waiting for response');
+
+			await server.close();
 		});
 	});
 });
