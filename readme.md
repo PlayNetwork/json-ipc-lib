@@ -1,6 +1,6 @@
 # JSON IPC
 
-[![Build Status](https://travis-ci.org/PlayNetwork/json-ipc-lib.svg?branch=master)](https://travis-ci.org/PlayNetwork/json-ipc-lib) [![Coverage Status](https://coveralls.io/repos/github/PlayNetwork/json-ipc-lib/badge.svg)](https://coveralls.io/github/PlayNetwork/json-ipc-lib)
+[![Build Status](https://travis-ci.org/PlayNetwork/json-ipc-lib.svg?branch=master)](https://travis-ci.org/PlayNetwork/json-ipc-lib) [![Coverage Status](https://coveralls.io/repos/github/PlayNetwork/json-ipc-lib/badge.svg?branch=master)](https://coveralls.io/github/PlayNetwork/json-ipc-lib)
 
 This library exists to facilitate creation and consumption of Unix domain socket based interprocess communication channels that opinionatingly use JSON-RPC 2.0 as a communication protocol. This library takes care of the plumbing and error handling and provides a simple interface to speed up development.
 
@@ -14,7 +14,7 @@ npm install --save json-ipc-lib
 
 ### Create a server
 
-Below is an example where we create a file named `server.js` and populate it with the following code (available at ![./test/examples/server.js](./test/examples/server.js)):
+Below is an example where we create a file named `server.js` and populate it with the following code (available at ![./examples/server.js](./examples/server.js)):
 
 ```javascript
 import * as ipc from 'json-ipc-lib';
@@ -45,7 +45,7 @@ $ DEBUG=json-ipc node server.js
 
 ### Create a client
 
-Next up, we create an example of consuming the server from the example above. We create a file named `client.js` and put the following code in it (available at ![./test/examples/client.js](./test/examples/client.js)):
+Next up, we create an example of consuming the server from the example above. We create a file named `client.js` and put the following code in it (available at ![./examples/client.js](./examples/client.js)):
 
 ```javascript
 import 'babel-polyfill';
@@ -81,7 +81,7 @@ import * as ipc from '../../dist';
    * - this example is using a traditional callback
    **/
   client.call({
-		id : Date.now(),
+    id : Date.now(),
     jsonrpc : '2.0',
     method : 'services.hello',
     params : ['verbose example string']
@@ -133,22 +133,48 @@ result when passing no arguments to client.call: olleh
 
 ### Client
 
-`new ipc.Client(path, options)`
-
-#### arguments
+Constructor: `new ipc.Client(path, options)`
 
 * `path` - `String`, value is `required` (i.e. `/var/run/my-service.sock`): String path on the file system to the location of the Unix domain socket file (or named pipe).
-* `options` - `Object`, value is optional:
+* `options` - `Object`, value is `optional`:
   * `timeout` - `Number`, defaults to `5000`: The amount of time, in milliseconds, before the `call` method will timeout (a timeout results in an error response).
+
+#### #call
+
+Usage: `client.call(method, ...args)`
+
+* `method` - `String` or `Object`, value is `required` (i.e. `services.hello`): String name of remove service method to execute *or optionally* a `JSON-RPC 2.0` compliant message that defines the `id`, `method` and `params` for the remote procedure call to be executed.
+* `args` - `Array`, value is `optional`: a list of arguments to provide to the remote method being executed. If the last value in the `Array` provided is a `function`, it is executed as a callback using the signature `function (err, result)`.
 
 ### Server
 
-`new ipc.Server(path, methods, options)`
-
-#### arguments
+Constructor: `new ipc.Server(path, methods, options)`
 
 * `path` - `String`, value is `required` (i.e. `/var/run/my-service.sock`): String path on the file system to the location of the Unix domain socket file (or named pipe).
 * `methods` - `Object`, value is `required` (i.e. `{ services : { lowerCaseEcho : (val) => val.toLowerCase() } }`): An object, that may optionally have additional sub-objects, that maintains a list of remote methods available for execution. In the example, this field is an `Object` named `services` with a single `function` named `lowerCaseEcho` - this example translates to a JSON-RPC 2.0 method value of `services.lowerCaseEcho`
 * `options` - `Object`, value is `optional`:
   * `cleanHandleOnListen` - (`Boolean`, defaults to `true`): Ehen true, the `#listen()` method will attempt to remove the Unix domain socket handle prior to creating a new one for listening
   * `excludedMethods` - (`Array`, defaults to `[]`): My contain a list of strings that filter which methods are available for remote execution - this may come in handy when exposing an entire module, but there is a desire to hide certain functions from remote consumers.
+
+#### #close
+
+
+#### #getConnections
+
+
+#### #listen
+
+
+#### event: close
+
+
+#### event: connection
+
+
+#### event: error
+
+
+#### event: listening
+
+
+#### event: request
