@@ -144,6 +144,14 @@ export class Client {
 				socket.on(EVENT_ERROR, (err) => {
 					debug('Client: error occurred on call: %s (%o)', err.message, err);
 
+					// ensure the error is an instance of Error
+					// v1.0.2 - fix for Errors not properly surfaced to client.call
+					if (!(err instanceof Error)) {
+						let caught = new Error(err.message);
+						caught.code = err.code;
+						err = caught;
+					}
+
 					err.message = [
 						'JSON-IPC Client Exception:',
 						err.message || 'unable to call remote method'].join(':');

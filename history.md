@@ -1,3 +1,7 @@
+# v1.0.2 - 08/16/2017
+
+* Fixed issue where errors encountered from the server were not properly surfaced on the `Client` instance on `#call`
+
 # v1.0.1 - 08/16/2017
 
 * Fixed issue where `main` definition in `package.json` was not properly defined
