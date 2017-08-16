@@ -53,6 +53,7 @@ describe('Client', () => {
 		it('should handle errors from service', async () => {
 			let
 				client = new Client(mockPath),
+				err,
 				server = new Server(mockPath, mockServices);
 
 			await server.listen();
@@ -61,9 +62,32 @@ describe('Client', () => {
 				let result = await client.call('a.throwError', 'surface errors test');
 				should.not.exist(result);
 			} catch (ex) {
-				should.exist(ex);
-				ex.message.should.contain('surface errors test');
+				err = ex;
 			}
+
+			should.exist(err);
+			err.message.should.contain('surface errors test');
+
+			await server.close();
+		});
+
+		it('should handle missing methods as an error', async () => {
+			let
+				client = new Client(mockPath),
+				err,
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			try {
+				let result = await client.call('a.methodDoesNotExist');
+				should.not.exist(result);
+			} catch (ex) {
+				err = ex;
+			}
+
+			should.exist(err);
+			err.message.should.contain('method not found');
 
 			await server.close();
 		});
