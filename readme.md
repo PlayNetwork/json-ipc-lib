@@ -47,6 +47,8 @@ $ DEBUG=json-ipc node server.js
 
 Next up, we create an example of consuming the server from the example above. We create a file named `client.js` and put the following code in it (available at ![./examples/client.js](./examples/client.js)):
 
+__*Note:* The following code demonstrates several examples of consuming the Server instance.__
+
 ```javascript
 import 'babel-polyfill';
 import 'source-map-support/register';
@@ -131,6 +133,8 @@ result when passing no arguments to client.call: olleh
 
 ## Documentation
 
+__*Usage Note*: each asynchronous method on both the `Client` and `Server` instances can be used with either a standard `callback` as the last argument, or can be used as a `Promise` or with an `await` statement in an `async` method.__
+
 ### Client
 
 Constructor: `new ipc.Client(path, [options])`
@@ -141,14 +145,32 @@ Creates a new instance of a `Client` that can be used to communicate with a `Ser
 * `options` - `Object`, value is `optional`:
   * `timeout` - `Number`, defaults to `5000`: The amount of time, in milliseconds, before the `call` method will timeout (a timeout results in an error response).
 
+```javascript
+import { Client } from `json-ipc-lib`;
+
+const client = new Client('/var/run/myserver.sock', { timeout : 10000 });
+```
+
 #### #call
 
 Usage: `client.call(method, [...args])`
 
-Call a method that is exposed for remote procedure call by the `Server` instance to which the `Client` is connected (via the `path` parameter provided to the constructor).
+Call a method that is exposed for remote procedure call by the `Server` instance to which the `Client` is connected (via the `path` parameter provided to the constructor). This method accepts either a [`JSON-RPC 2.0 Request Object`](http://www.jsonrpc.org/specification#request_object) directly as the first argument or can be used to build the `JSON-RPC 2.0` request dynamically when the `method` parameter is the `String` value name of the remote method target.
 
 * `method` - `String` or `Object`, value is `required` (i.e. `services.hello`): String name of remove service method to execute *or optionally* a `JSON-RPC 2.0` compliant message that defines the `id`, `method` and `params` for the remote procedure call to be executed.
 * `args` - `Array`, value is `optional`: a list of arguments to provide to the remote method being executed. If the last value in the `Array` provided is a `function`, it is executed as a callback using the signature `function (err, result) { }`.
+
+
+```javascript
+import { Client } from `json-ipc-lib`;
+
+const client = new Client('/var/run/myserver.sock', { timeout : 10000 });
+
+export default (async () => {
+  let myResult = await client.call('myserver.remote.addNumbers', 100, 100);
+  console.log(myResult);
+})();
+```
 
 ### Server
 
@@ -162,31 +184,143 @@ Creates a new instance of a `Server` that exposes various methods available for 
   * `cleanHandleOnListen` - (`Boolean`, defaults to `true`): Ehen true, the `#listen()` method will attempt to remove the Unix domain socket handle prior to creating a new one for listening
   * `excludedMethods` - (`Array`, defaults to `[]`): My contain a list of strings that filter which methods are available for remote execution - this may come in handy when exposing an entire module, but there is a desire to hide certain functions from remote consumers.
 
+```javascript
+import { Server } from `json-ipc-lib`;
+
+const server = new Server(
+  '/var/run/myserver.sock',
+  {
+    myserver : { // namespace `myserver`
+      remote : { // namespace `myserver.remote`
+        addNumbers : (...args) => new Promise((resolve, reject) => {
+          let total = args.reduce((sum, value) => {
+            return sum + value;
+          }, 0);
+
+          if (isNaN(total)) {
+            return reject(new Error('result is not a number'));
+          }
+
+          return resolve(total);
+        })
+      }
+    }
+  });
+```
+
 #### #close
 
 Usage: `server.close([callback])`
 
 Can be used to close an actively listening `Server` instance. If the `Server` instance is not listening for connections, this method will return an `Error`
 
-* `callback` - `function`, value is `optional` (i.e. `function (err) { }`: When provided, the method will execute the call back upon server close. When omitted, the method will return a `Promise` object.
+* `callback` - `function`, value is `optional` (i.e. `function (err) { }`): When provided, the method will execute the callback upon server close. When omitted, the method will return a `Promise` object.
 
+```javascript
+import { Server } from `json-ipc-lib`;
+import remote from './remote.js';
+
+const server = new Server(
+  '/var/run/myserver.sock',
+  {
+    myserver : {
+      remote
+    }
+  });
+
+export default (async () => {
+  try {
+    await server.close();
+  } catch (ex) {
+    console.error(ex);
+  }
+})();
+```
 
 #### #getConnections
 
+Usage: `server.getConnections([callback])`
+
+Returns the number of active connections to the server.
+
+* `callback` - `function`, value is `optional` (i.e. `function (err, count) { }`): When provided, the method will execute the callback upon completion. When omitted, the method will return a `Promise` object.
+
+```javascript
+import { Server } from `json-ipc-lib`;
+import remote from './remote.js';
+
+const server = new Server(
+  '/var/run/myserver.sock',
+  {
+    myserver : {
+      remote
+    }
+  });
+
+export default (async () => {
+  try {
+    await server.listen();
+
+    let count = await server.getConnections();
+
+    console.log('connected clients: %d', count);
+  } catch (ex) {
+    console.error(ex);
+  }
+})();
+```
 
 #### #listen
 
+Usage: `server.listen([callback])`
+
+Allows the `Server` instance to begin listening for connections. At this step, the server will create a new handle at the supplied `path` as a Unix domain socket.
+
+* `callback` - `function`, value is `optional` (i.e. `function (err) { }`): When provided, the method will execute the callback once the Unix domain socket is created and the server is actively listening for new connections. When omitted, the method will return a `Promise` object.
+
+```javascript
+import { Server } from `json-ipc-lib`;
+import remote from './remote.js';
+
+const server = new Server(
+  '/var/run/myserver.sock',
+  {
+    myserver : {
+      remote
+    }
+  });
+
+export default (async () => {
+  try {
+    await server.listen();
+  } catch (ex) {
+    console.error(ex);
+  }
+})();
+```
 
 #### event: close
 
+Emitted once the server is closed and no longer listening for new connections.
 
 #### event: connection
 
+Emitted when a new connection is established with the `Server` isntance.
+
+* `socket` - [`net.Socket`](https://nodejs.org/api/net.html#net_class_net_socket): The socket connected to the `Server` instance.
 
 #### event: error
 
+Emitted when an `Error` is encountered on the `Server` instance after listening has begun.
+
+* `error` - `Error`: The `Error` that occurred.
 
 #### event: listening
 
+Emitted once the `Server` instance is listening for new connections.
 
 #### event: request
+
+Emitted each time a new `JSON-RPC 2.0` request is received and successfully parsed on the server.
+
+* `request` - [`JSON-RPC 2.0 Request Object`](http://www.jsonrpc.org/specification#request_object) - An object that represents the `JSON-RPC 2.0` request that was received by the server.
