@@ -5,7 +5,9 @@ examples/
 src/
 test/
 .babelrc
+.coveralls.yml
 .eslintrc.yml
 .gitignore
 .npmignore
 gulpfile.babel.js
+history.md

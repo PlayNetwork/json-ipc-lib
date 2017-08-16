@@ -1,8 +1,8 @@
 {
   "name": "json-ipc-lib",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Enables creation and consumption of Unix domain socket based IPC channels between Node.js apps using JSON-RPC 2.0 as a protocol.",
-  "main": "gulpfile.babel.js",
+  "main": "./dist",
   "scripts": {
     "example:client": "DEBUG=json-ipc node examples/client-transpiled.js",
     "example:server": "DEBUG=json-ipc node examples/server-transpiled.js",
