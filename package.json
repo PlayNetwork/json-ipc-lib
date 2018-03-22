@@ -1,6 +1,6 @@
 {
   "name": "json-ipc-lib",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Enables creation and consumption of Unix domain socket based IPC channels between Node.js apps using JSON-RPC 2.0 as a protocol.",
   "main": "./dist",
   "scripts": {
