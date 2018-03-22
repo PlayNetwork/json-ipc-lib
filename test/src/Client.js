@@ -16,6 +16,10 @@ describe('Client', () => {
 				waitToReturn : (duration, val) => new Promise((resolve) => setTimeout(
 					() => resolve(val),
 					duration))
+			},
+			d : {
+				falsePromise : () => Promise.resolve(false),
+				truePromise : () => Promise.resolve(true)
 			}
 		};
 
@@ -134,6 +138,36 @@ describe('Client', () => {
 
 			should.exist(result);
 			result.should.equal('testing response');
+
+			await server.close();
+		});
+
+		it('should support asynchronous server methods returning boolean true', async () => {
+			let
+				client = new Client(mockPath),
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			let result = await client.call('d.truePromise');
+
+			should.exist(result);
+			result.should.equal(true);
+
+			await server.close();
+		});
+
+		it('should support asynchronous server methods returning boolean false', async () => {
+			let
+				client = new Client(mockPath),
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			let result = await client.call('d.falsePromise');
+
+			should.exist(result);
+			result.should.equal(false);
 
 			await server.close();
 		});
