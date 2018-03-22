@@ -99,7 +99,7 @@ export class Client {
 					}
 
 					// resolve when a result is received
-					if (response && response.result) {
+					if (response && typeof response.result !== 'undefined') {
 						return resolve(response.result);
 					}
 
