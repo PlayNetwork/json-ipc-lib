@@ -19,6 +19,9 @@ describe('Client', () => {
 			},
 			d : {
 				falsePromise : () => Promise.resolve(false),
+				synchronousFalse : () => {
+					return false;
+				},
 				truePromise : () => Promise.resolve(true)
 			}
 		};
@@ -165,6 +168,21 @@ describe('Client', () => {
 			await server.listen();
 
 			let result = await client.call('d.falsePromise');
+
+			should.exist(result);
+			result.should.equal(false);
+
+			await server.close();
+		});
+
+		it('should support synchronous server methods returning boolean false', async () => {
+			let
+				client = new Client(mockPath),
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			let result = await client.call('d.synchronousFalse');
 
 			should.exist(result);
 			result.should.equal(false);

@@ -204,7 +204,7 @@ export class Server extends EventEmitter {
 			}
 
 			// handle synchronous results
-			if (result && (!result.then || typeof result.then !== 'function')) {
+			if (typeof result !== 'undefined' && (!result.then || typeof result.then !== 'function')) {
 				debug('Server: method %s returned synchronously', socket.request.method);
 
 				// handle the result of the method when not a Promise...
