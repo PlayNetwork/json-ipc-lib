@@ -175,7 +175,45 @@ describe('Client', () => {
 			await server.close();
 		});
 
-		it('should support synchronous server methods returning boolean false', async () => {
+		it('should support calling via object verbose syntax', async () => {
+			let
+				client = new Client(mockPath),
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			let result = await client.call({
+				id      : Date.now(),
+				jsonrpc : '2.0',
+				method  : 'd.falsePromise',
+				params  : []
+			});
+
+			should.exist(result);
+			result.should.equal(false);
+			await server.close();
+		});
+
+        it('should accept arguments also in verbose syntax', async () => {
+			let
+				client = new Client(mockPath),
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			let result = await client.call({
+				id      : Date.now(),
+				jsonrpc : '2.0',
+				method  : 'b.lowerCasePromise',
+				params  : ['TESTING']
+			});
+
+			should.exist(result);
+			result.should.equal('testing');
+			await server.close();
+		});
+
+        it('should support synchronous server methods returning boolean false', async () => {
 			let
 				client = new Client(mockPath),
 				server = new Server(mockPath, mockServices);
