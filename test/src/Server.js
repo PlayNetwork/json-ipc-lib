@@ -1,7 +1,10 @@
 /* eslint no-magic-numbers:0 */
 /* eslint no-unused-expressions:0 */
 import { Client, Server } from '../../src';
+import chai from 'chai';
 import fs from 'fs';
+
+const should = chai.should();
 
 describe('Server', () => {
 	let

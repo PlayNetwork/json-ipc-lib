@@ -1,6 +1,9 @@
 /* eslint no-magic-numbers:0 */
 /* eslint no-unused-expressions:0 */
 import { Client, Server } from '../../src';
+import chai from 'chai';
+
+const should = chai.should();
 
 describe('Client', () => {
 	let
@@ -115,6 +118,25 @@ describe('Client', () => {
 					return server.close(done);
 				});
 			});
+		});
+
+		it('should accept JSON-RPC compliant message', async () => {
+			let
+				client = new Client(mockPath),
+				server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			let result = await client.call({
+				id : 1,
+				method : 'b.lowerCasePromise',
+				params : ['TESTING']
+			});
+
+			should.exist(result);
+			result.should.equal('testing');
+
+			await server.close();
 		});
 
 		it('should expose error event for connection errors', (done) => {
