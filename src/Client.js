@@ -38,6 +38,11 @@ export class Client {
 	}
 
 	async call (method, ...args) {
+		if (typeof(method) === 'object') {
+			let verbose = method;
+			method = verbose['method'];
+			args = verbose['params'];
+		}
 		if (!method || typeof method !== 'string') {
 			throw new Error('method parameter is required');
 		}
