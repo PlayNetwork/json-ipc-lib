@@ -1,9 +1,13 @@
 /* eslint no-magic-numbers:0 */
 /* eslint no-unused-expressions:0 */
 import { Client, Server } from '../../src';
+import chai from 'chai';
+
+const should = chai.should();
 
 describe('Client', () => {
 	let
+		client,
 		mockPath = '/tmp/test.sock',
 		mockServices = {
 			a : {
@@ -24,9 +28,16 @@ describe('Client', () => {
 				},
 				truePromise : () => Promise.resolve(true)
 			}
-		};
+		},
+		server;
 
 	describe('#', () => {
+		afterEach(async () => {
+			if (server && server._listening) {
+				await server.close();
+			}
+		});
+
 		it('should require path parameter', () => {
 			(function () {
 				let client = new Client();
@@ -44,6 +55,12 @@ describe('Client', () => {
 	});
 
 	describe('#call', () => {
+		afterEach(async () => {
+			if (server && server._listening) {
+				await server.close();
+			}
+		});
+
 		it('should require method', () => {
 			let client = new Client(mockPath);
 			client
@@ -58,10 +75,10 @@ describe('Client', () => {
 		});
 
 		it('should handle errors from service', async () => {
-			let
-				client = new Client(mockPath),
-				err,
-				server = new Server(mockPath, mockServices);
+			let err;
+
+			client = new Client(mockPath);
+			server = new Server(mockPath, mockServices);
 
 			await server.listen();
 
@@ -79,10 +96,10 @@ describe('Client', () => {
 		});
 
 		it('should handle missing methods as an error', async () => {
-			let
-				client = new Client(mockPath),
-				err,
-				server = new Server(mockPath, mockServices);
+			let err;
+
+			client = new Client(mockPath);
+			server = new Server(mockPath, mockServices);
 
 			await server.listen();
 
@@ -100,9 +117,8 @@ describe('Client', () => {
 		});
 
 		it('should accept arguments', (done) => {
-			let
-				client = new Client(mockPath),
-				server = new Server(mockPath, mockServices);
+			client = new Client(mockPath);
+			server = new Server(mockPath, mockServices);
 
 			server.listen();
 
@@ -115,6 +131,24 @@ describe('Client', () => {
 					return server.close(done);
 				});
 			});
+		});
+
+		it('should accept JSON-RPC compliant message', async () => {
+			client = new Client(mockPath);
+			server = new Server(mockPath, mockServices);
+
+			await server.listen();
+
+			let result = await client.call({
+				id : 1,
+				method : 'b.lowerCasePromise',
+				params : ['TESTING']
+			});
+
+			should.exist(result);
+			result.should.equal('testing');
+
+			await server.close();
 		});
 
 		it('should expose error event for connection errors', (done) => {
@@ -131,9 +165,8 @@ describe('Client', () => {
 		});
 
 		it('should support asynchronous server methods', async () => {
-			let
-				client = new Client(mockPath),
-				server = new Server(mockPath, mockServices);
+			client = new Client(mockPath);
+			server = new Server(mockPath, mockServices);
 
 			await server.listen();
 
@@ -146,9 +179,8 @@ describe('Client', () => {
 		});
 
 		it('should support asynchronous server methods returning boolean true', async () => {
-			let
-				client = new Client(mockPath),
-				server = new Server(mockPath, mockServices);
+			client = new Client(mockPath);
+			server = new Server(mockPath, mockServices);
 
 			await server.listen();
 
@@ -161,9 +193,8 @@ describe('Client', () => {
 		});
 
 		it('should support asynchronous server methods returning boolean false', async () => {
-			let
-				client = new Client(mockPath),
-				server = new Server(mockPath, mockServices);
+			client = new Client(mockPath);
+			server = new Server(mockPath, mockServices);
 
 			await server.listen();
 
@@ -176,9 +207,8 @@ describe('Client', () => {
 		});
 
 		it('should support synchronous server methods returning boolean false', async () => {
-			let
-				client = new Client(mockPath),
-				server = new Server(mockPath, mockServices);
+			client = new Client(mockPath);
+			server = new Server(mockPath, mockServices);
 
 			await server.listen();
 
@@ -191,10 +221,10 @@ describe('Client', () => {
 		});
 
 		it('should support timeout', async () => {
-			let
-				client = new Client(mockPath, { timeout : 500 }),
-				err,
-				server = new Server(mockPath, mockServices);
+			let err;
+
+			client = new Client(mockPath, { timeout : 500 });
+			server = new Server(mockPath, mockServices);
 
 			await server.listen();
 

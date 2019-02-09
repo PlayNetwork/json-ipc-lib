@@ -4,15 +4,12 @@
     es6: true
     mocha: true
     node: true
-  globals:
-    should: true
   parser: "babel-eslint"
   parserOptions:
     ecmaVersion: 6
     sourceType: "module"
   plugins:
     - "babel"
-    - "flowtype"
   rules:
     array-bracket-spacing:
       - 2
@@ -48,7 +45,6 @@
     curly: 2
     default-case: 2
     eqeqeq: 2
-    flowtype/object-type-delimiter: 2
     generator-star-spacing:
       - 2
       - before: true
@@ -99,7 +95,7 @@
     no-loop-func: 2
     no-magic-numbers:
       - 2
-      - ignore: [-1, 0, 1]
+      - ignore: [-1, 0, 1, 2]
         ignoreArrayIndexes: true
     no-mixed-requires:
       - 0
@@ -149,9 +145,18 @@
       - "single"
     radix: 2
     semi: 2
-    sort-keys: 2
-    sort-imports: 2
-    sort-vars: 2
+    sort-imports:
+      - 2
+      - ignoreCase: true
+        ignoreMemberSort: true
+    sort-keys:
+      - 2
+      - "asc"
+      - caseSensitive: false
+        natural: true
+    sort-vars:
+      - 2
+      - ignoreCase: true
     space-before-function-paren:
       - 2
       - "always"

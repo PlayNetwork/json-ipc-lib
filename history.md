@@ -1,3 +1,7 @@
+# v1.1.0 - 02/05/2019
+
+* Updated Babel dependencies
+
 # v1.0.2 - 08/16/2017
 
 * Fixed issue where errors encountered from the server were not properly surfaced on the `Client` instance on `#call`
