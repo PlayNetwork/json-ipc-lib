@@ -38,7 +38,7 @@ export class Client {
 	}
 
 	async call (method, ...args) {
-		if (!method || typeof method !== 'string') {
+		if (!method || (typeof method !== 'string' && !method.method)) {
 			throw new Error('method parameter is required');
 		}
 

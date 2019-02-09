@@ -21,32 +21,43 @@ describe('Server', () => {
 					(resolve) => setTimeout(
 						() => resolve(val.toLowerCase()), 500))
 			}
-		};
+		},
+		server;
+
+	after(() => {
+		process.exit(0);
+	});
 
 	describe('#', () => {
+		afterEach(async () => {
+			if (server && server._listening) {
+				await server.close();
+			}
+		});
+
 		it('should require path parameter', () => {
 			(function () {
-				let server = new Server();
+				server = new Server();
 				should.not.exist(server);
 			}).should.throw('path parameter is required');
 		});
 
 		it('should require methods parameter', () => {
 			(function () {
-				let server = new Server(mockPath);
+				server = new Server(mockPath);
 				should.not.exist(server);
 			}).should.throw('methods parameter is required');
 		});
 
 		it('should require methods parameter be an object', () => {
 			(function () {
-				let server = new Server(mockPath, 'invalid');
+				server = new Server(mockPath, 'invalid');
 				should.not.exist(server);
 			}).should.throw('methods parameter is required');
 		});
 
 		it('should properly default options', () => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 
 			should.exist(server.options);
 			server.options.cleanHandleOnListen.should.be.true;
@@ -55,8 +66,14 @@ describe('Server', () => {
 	});
 
 	describe('#close', () => {
+		afterEach(async () => {
+			if (server && server._listening) {
+				await server.close();
+			}
+		});
+
 		it('should return an Error if server is not listening', () => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 
 			return server
 				.close()
@@ -68,7 +85,7 @@ describe('Server', () => {
 		});
 
 		it('should support callback', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 
 			server.close((err) => {
 				should.exist(err);
@@ -79,7 +96,7 @@ describe('Server', () => {
 		});
 
 		it('should emit close event', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 			server.listen(() => {
 				server.on('close', done);
 				server.close();
@@ -87,7 +104,7 @@ describe('Server', () => {
 		});
 
 		it('should close connections on close', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 			server.listen(() => {
 				server.connections.push({
 					end : done
@@ -99,8 +116,14 @@ describe('Server', () => {
 	});
 
 	describe('#getConnections', () => {
+		afterEach(async () => {
+			if (server && server._listening) {
+				await server.close();
+			}
+		});
+
 		it('should support callback', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 
 			server.listen(() => {
 				let client = new Client(mockPath);
@@ -120,7 +143,7 @@ describe('Server', () => {
 
 		it('should return 0 with no connections', async () => {
 			// setup the server
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 			await server.listen();
 
 			let count = await server.getConnections();
@@ -133,8 +156,14 @@ describe('Server', () => {
 	});
 
 	describe('#listen', () => {
+		afterEach(async () => {
+			if (server && server._listening) {
+				await server.close();
+			}
+		});
+
 		it('should support callback', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 			server.listen((err) => {
 				should.not.exist(err);
 				return server.close(done);
@@ -142,7 +171,7 @@ describe('Server', () => {
 		});
 
 		it('should pass through error on listen', async () => {
-			let server = new Server(
+			server = new Server(
 				'/no/path/exists/to/this/location',
 				mockServices);
 
@@ -159,7 +188,7 @@ describe('Server', () => {
 		});
 
 		it('should pass through error on listen (callback)', (done) => {
-			let server = new Server(
+			server = new Server(
 				'/no/path/exists/to/this/location',
 				mockServices);
 
@@ -173,7 +202,7 @@ describe('Server', () => {
 		});
 
 		it('should not remove existing socket file if specified', async () => {
-			let server = new Server(
+			server = new Server(
 				mockPath,
 				mockServices,
 				{ cleanHandleOnListen : false });
@@ -204,7 +233,7 @@ describe('Server', () => {
 		});
 
 		it('should emit listening event', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 			server.listen();
 			server.on('listening', () => {
 				return server.close(done);
@@ -212,7 +241,7 @@ describe('Server', () => {
 		});
 
 		it('should emit connection event', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 
 			server.listen(() => {
 				let client = new Client(mockPath);
@@ -228,7 +257,7 @@ describe('Server', () => {
 		});
 
 		it('should emit request event', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 
 			server.listen(() => {
 				let client = new Client(mockPath);
@@ -247,7 +276,7 @@ describe('Server', () => {
 		});
 
 		it('should track connections', (done) => {
-			let server = new Server(mockPath, mockServices);
+			server = new Server(mockPath, mockServices);
 
 			server.listen(() => {
 				let client = new Client(mockPath);
