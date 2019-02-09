@@ -152,7 +152,7 @@
     sort-keys:
       - 2
       - "asc"
-      - caseSensitive: true
+      - caseSensitive: false
         natural: true
     sort-vars:
       - 2
