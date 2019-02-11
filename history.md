@@ -1,3 +1,7 @@
+# v1.1.2 - 02/11/2019
+
+* Fixed issue in `Client` module where usage of `#call` with object was not properly stringified
+
 # v1.1.0 - 02/05/2019
 
 * Updated Babel dependencies
