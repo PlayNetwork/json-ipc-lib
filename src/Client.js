@@ -67,11 +67,9 @@ export class Client {
 				// connect to the Unix domain socket and transmit the request
 				let socket = net.createConnection(self.path, () => {
 					if (socket.writable) {
-						debug(
-							'Client: writing message to socket connection: %o',
-							request);
-
-						socket.write(JSON.stringify(request));
+						if (typeof(request) === 'object') request = JSON.stringify(request);
+						debug('Client: writing message to socket connection: %o', request);
+						socket.write(request);
 					}
 				});
 
