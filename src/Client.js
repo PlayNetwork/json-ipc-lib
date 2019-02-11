@@ -71,7 +71,7 @@ export class Client {
 							'Client: writing message to socket connection: %o',
 							request);
 
-						socket.write(JSON.stringify(request));
+						socket.write(typeof request === 'string' ? request : JSON.stringify(request));
 					}
 				});
 
