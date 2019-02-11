@@ -1,6 +1,6 @@
 {
   "name": "json-ipc-lib",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Enables creation and consumption of Unix domain socket based IPC channels between Node.js apps using JSON-RPC 2.0 as a protocol.",
   "main": "./dist",
   "scripts": {
@@ -34,8 +34,7 @@
   },
   "homepage": "https://github.com/PlayNetwork/json-ipc-lib#readme",
   "dependencies": {
-    "@babel/polyfill": "^7.2.5",
-    "@babel/runtime": "^7.3.1",
+    "@babel/runtime-corejs2": "^7.3.1",
     "debug": "^4.1.1",
     "json-rpc-protocol": "^0.13.1"
   },
@@ -72,6 +71,6 @@
     "require": [
       "@babel/register"
     ],
-    "sourceMap": true
+    "sourceMap": false
   }
 }
