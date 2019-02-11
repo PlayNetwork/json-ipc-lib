@@ -1,6 +1,3 @@
-import 'babel-polyfill';
-import 'source-map-support/register';
-
 import * as protocol from 'json-rpc-protocol';
 import EventEmitter from 'events';
 import fs from 'fs';
