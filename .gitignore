@@ -2,7 +2,7 @@
 /.nyc_output/
 /coverage/
 /dist/
+/examples-dist/
 /node_modules/
 /reports/
 /npm-debug.log
-

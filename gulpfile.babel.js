@@ -2,6 +2,7 @@ import { dest, series, src } from 'gulp';
 import babel from 'gulp-babel';
 import del from 'gulp-clean';
 import eslint from 'gulp-eslint';
+import rename from 'gulp-rename';
 import sourcemaps from 'gulp-sourcemaps';
 
 function build () {
@@ -12,8 +13,14 @@ function build () {
 		.pipe(dest('dist'));
 }
 
+function buildExamples () {
+	return src(['examples/client.js', 'examples/server.js'])
+		.pipe(babel())
+		.pipe(dest('examples-dist'));
+}
+
 function clean () {
-	return src(['dist', 'reports'], { allowEmpty : true, read : false })
+	return src(['dist', 'examples-dist', 'reports'], { allowEmpty : true, read : false })
 		.pipe(del());
 }
 
@@ -24,7 +31,16 @@ function lint () {
 		.pipe(eslint.failAfterError());
 }
 
+function renameExamples () {
+	return src(['examples-dist/*.js'])
+		.pipe(rename({
+			suffix : '-transpiled'
+		}))
+		.pipe(dest('examples'));
+}
+
 exports.build = build;
+exports.buildExamples = series(clean, buildExamples, renameExamples);
 exports.clean = clean;
 exports.default = series(clean, lint, build);
 exports.lint = lint;
