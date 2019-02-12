@@ -1,7 +1,4 @@
 /* eslint no-console: 0 */
-import 'babel-polyfill';
-import 'source-map-support/register';
-
 import * as ipc from '../dist';
 
 (async () => {
