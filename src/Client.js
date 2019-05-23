@@ -149,9 +149,7 @@ export class Client {
 						err = caught;
 					}
 
-					err.message = [
-						'JSON-IPC Client Exception:',
-						err.message || 'unable to call remote method'].join(':');
+					err.message = err.message || 'unable to call remote method';
 					err.path = self.path;
 
 					// ensure the socket is closed
