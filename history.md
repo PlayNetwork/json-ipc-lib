@@ -1,7 +1,3 @@
-# v1.1.4 - 05/27/2019
-
-* Updated error message modification through client socket. No longer prepending `JSON-IPC Client Exception::` to it.
-
 # v1.1.3 - 02/11/2019
 
 * Updated examples to remove references to `babel-polyfill`
